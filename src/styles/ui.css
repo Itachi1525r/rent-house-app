@@ -1,0 +1,65 @@
+/* ---------- GLOBAL ---------- */
+.page-container {
+  padding-top: 30px;
+  padding-bottom: 40px;
+}
+
+.card {
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- IMAGE ---------- */
+.card-img-top {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  box-shadow: 0 6px 14px rgba(13, 110, 253, 0.25);
+}
+
+/* ---------- BADGES ---------- */
+.badge {
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 20px;
+}
+
+/* ---------- DISABLED CARDS ---------- */
+.opacity-50 {
+  pointer-events: none;
+  filter: grayscale(60%);
+}
+
+/* ---------- HOUSE DETAIL ---------- */
+.house-title {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #555;
+}
+
+/* ---------- IMAGE SLIDER ---------- */
+.slider-btn {
+  min-width: 100px;
+}
+
+/* ---------- OWNER DASHBOARD ---------- */
+.stat-card h2 {
+  font-size: 2.2rem;
+}
