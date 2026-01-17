@@ -1,117 +1,120 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../services/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth } from "../services/firebase";
-import { db } from "../services/firebase";
+import { uploadOwnerFaceToCloudinary } from "../services/cloudinary";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [faceImage, setFaceImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+
+    // 🔒 Owner must upload face photo
+    if (role === "owner" && !faceImage) {
+      alert("Owner face photo is required");
+      return;
+    }
 
     try {
-      // 1️⃣ Create auth account
-      const userCredential = await createUserWithEmailAndPassword(
+      setLoading(true);
+
+      // 1️⃣ Create Auth user
+      const userCred = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      const user = userCredential.user;
+      let faceUrl = "";
 
-      // 2️⃣ Save user profile in Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      // 2️⃣ Upload owner face image (only for owner)
+      if (role === "owner") {
+        faceUrl = await uploadOwnerFaceToCloudinary(faceImage);
+      }
+
+      // 3️⃣ Save user profile in Firestore
+      await setDoc(doc(db, "users", userCred.user.uid), {
         name,
         email,
         role,
+        faceUrl, // 🔥 IMPORTANT
         createdAt: serverTimestamp(),
       });
 
+      alert("Registration successful");
       navigate("/login");
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
     <div className="container page-container">
-      <div className="row justify-content-center">
-        <div className="col-md-5">
-          <div className="card p-4">
-            <h3 className="text-center mb-3">Register</h3>
+      <h2 className="mb-3">Register</h2>
 
-            {error && <div className="alert alert-danger">{error}</div>}
+      <form onSubmit={handleRegister} className="card p-4">
+        <input
+          className="form-control mb-3"
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
 
-            <form onSubmit={handleRegister}>
-              <div className="mb-3">
-                <label className="form-label">Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
+        <input
+          type="email"
+          className="form-control mb-3"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-              <div className="mb-3">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-control"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+        <input
+          type="password"
+          className="form-control mb-3"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-              <div className="mb-3">
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+        <select
+          className="form-control mb-3"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
+          <option value="user">User</option>
+          <option value="owner">Owner</option>
+        </select>
 
-              <div className="mb-3">
-                <label className="form-label">Register As</label>
-                <select
-                  className="form-select"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option value="user">User</option>
-                  <option value="owner">House Owner</option>
-                </select>
-              </div>
+        {/* 👤 OWNER FACE UPLOAD */}
+        {role === "owner" && (
+          <input
+            type="file"
+            className="form-control mb-3"
+            accept="image/*"
+            onChange={(e) => setFaceImage(e.target.files[0])}
+            required
+          />
+        )}
 
-              <button
-                type="submit"
-                className="btn btn-primary w-100"
-                disabled={loading}
-              >
-                {loading ? "Creating account..." : "Register"}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+        <button className="btn btn-primary" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
+      </form>
     </div>
   );
 }

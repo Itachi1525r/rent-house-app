@@ -16,10 +16,21 @@ function ForgotPassword() {
 
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage("Password reset email sent. Check your inbox.");
-      // eslint-disable-next-line no-unused-vars
+      setMessage(
+        "Password reset email sent successfully. Please check your inbox (and spam folder)."
+      );
     } catch (err) {
-      setError("Unable to send reset email. Please check the email address.");
+      console.error("Reset error:", err.code);
+
+      if (err.code === "auth/user-not-found") {
+        setError("No account found with this email.");
+      } else if (err.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many attempts. Please try again later.");
+      } else {
+        setError("Failed to send reset email. Try again.");
+      }
     }
 
     setLoading(false);

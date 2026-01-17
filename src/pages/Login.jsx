@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../services/firebase";
@@ -19,7 +19,7 @@ function Login() {
     setError("");
 
     try {
-      // 1️⃣ Firebase Authentication
+      // 🔹 Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -28,24 +28,19 @@ function Login() {
 
       const uid = userCredential.user.uid;
 
-      // 2️⃣ Fetch user profile from Firestore
-      const userDocRef = doc(db, "users", uid);
-      const userDoc = await getDoc(userDocRef);
+      // 🔹 Fetch user role from Firestore
+      const userDoc = await getDoc(doc(db, "users", uid));
 
       if (userDoc.exists()) {
-        // 🔥 Normalize role (VERY IMPORTANT FIX)
         const role = userDoc.data().role?.toString().trim().toLowerCase();
 
-        console.log("User role from Firestore:", role);
-
-        // 3️⃣ Role-based redirect
+        // 🔹 Role-based redirect
         if (role === "owner") {
           navigate("/owner", { replace: true });
         } else {
           navigate("/search", { replace: true });
         }
       } else {
-        // Fallback (should not happen)
         navigate("/search", { replace: true });
       }
     } catch (err) {
@@ -68,7 +63,7 @@ function Login() {
     <div className="container page-container">
       <div className="row justify-content-center">
         <div className="col-md-5">
-          <div className="card p-4">
+          <div className="card p-4 shadow-sm">
             <h3 className="text-center mb-3">Login</h3>
 
             {error && <div className="alert alert-danger">{error}</div>}
@@ -104,8 +99,15 @@ function Login() {
                 {loading ? "Logging in..." : "Login"}
               </button>
 
+              {/* 🔹 Forgot password */}
               <div className="text-center mt-3">
-                <a href="/forgot-password">Forgot Password?</a>
+                <Link to="/forgot-password">Forgot Password?</Link>
+              </div>
+
+              {/* 🔹 Register link */}
+              <div className="text-center mt-2">
+                <span className="text-muted">Don’t have an account? </span>
+                <Link to="/register">Register here</Link>
               </div>
             </form>
           </div>

@@ -142,7 +142,7 @@ function Home() {
                 <p className="text-muted">
                   View and update your profile details.
                 </p>
-                <Link to="/profile" className="btn btn-outline-dark">
+                <Link to="/owner/profile" className="btn btn-outline-dark">
                   Go to Profile
                 </Link>
               </div>
